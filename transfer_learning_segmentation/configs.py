@@ -9,8 +9,10 @@ configs = {
         # # 'fashion':'/mnt_sda/ML/datasets/semantic_segmentation/human_segmetation/human_fashion_dataset/humanparsing', DISLIKE
         # 'similars':'/mnt_sda/ML/datasets/semantic_segmentation/human_segmetation/human_dataset_similars',
         'ade20k_images': '/mnt_sda/ML/datasets/ADE20K_2021_17_01/images_detectron2/training',
-
         'ade20k_masks':'/mnt_sda/ML/datasets/ADE20K_2021_17_01/annotations_detectron2/training',
+
+        'city_images': '/mnt_sda/ML/datasets/ADE20K_2021_17_01/images_detectron2/training',
+        'city_masks': '/mnt_sda/ML/datasets/ADE20K_2021_17_01/annotations_detectron2/training',
 
     },
     "val_paths": {
@@ -29,7 +31,7 @@ configs = {
 ofi_trainer_config = {
     "learning_rate": 0.0001,
     "epochs": 20000,
-    "steps_per_epoch": 12,
+    "steps_per_epoch": 512,
     "criterion": torch.nn.BCELoss()
 }
 

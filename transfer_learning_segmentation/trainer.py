@@ -1,5 +1,5 @@
 from __future__ import print_function, division
-
+import matplotlib.pyplot as plt
 import logging
 import os
 import shutil
@@ -47,23 +47,30 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
             iou_res = 0.0
 
             for step in tqdm(range(num_steps)):
+
                 try:
-                    while True:
-                        inputs, labels = next(generators[phase])
-                        print('labels.mean()', labels.mean())
-                        if labels.mean() != 1.:
-                            break
+                    inputs, labels = next(generators[phase])
+
+                    # if phase == 'train':
+                    #     while True:
+                    #         inputs, labels = next(generators[phase])
+                    #         print('labels.mean()', labels.mean())
+                    #         if labels.mean() != 1.:
+                    #             break
+                    # if phase == 'val':
+                    #     inputs, labels = next(generators[phase])
                 except StopIteration:
                     generators[phase] = iter(dataloaders[phase])
                     inputs, labels = next(generators[phase])
 
+                # print(inputs.shape)
+                # print(labels.shape)
+                # for i in range(labels.shape[0]):
+                #     plt.imshow(labels[i,0,:,:].cpu().numpy())
+                #     plt.show()
+                inputs = inputs.to(device)
+                labels = labels.to(device)
 
-                try:
-                    inputs = inputs.to(device)
-                    labels = labels.to(device)
-                except:
-                    print(type(inputs))
-                    print(inputs)
                 # zero the parameter gradients
                 optimizer.zero_grad()
 
@@ -76,7 +83,6 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
                     backbone_preds = torch.clip(backbone_outputs / backbone_preds.max(), 0, 1)
 
                     preds = torch.squeeze(outputs, 1).detach()
-                    print('PREDS ', preds.min(), preds.max())
 
                     loss = criterion(outputs, labels)
                     if phase == 'train':
@@ -131,7 +137,7 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
 
 
         print()
-        if epoch % 10 == 0:
+        if epoch % 2 == 0:
             save_checkpoint(model, optimizer, scheduler, epoch, str(writer.get_logdir()) + f'/checkpoint_{epoch}.pth',
                             epoch_acc, epoch_loss)
             print('Saved model checkpoint at ', str(writer.get_logdir()) + f'/checkpoint_{epoch}.pth')

@@ -1,5 +1,6 @@
 from __future__ import print_function, division
 import os
+import re
 import shutil
 
 import torch
@@ -23,7 +24,17 @@ def save_checkpoint(model, optimizer, lr_scheduler, epoch, path, iou_res, bce_re
     torch.save(model.state_dict(), path[:-4]+'_model.pth')
 
 
-def load_model_state(configs, log_dir, device):
+def load_model_state(configs, log_dir, device, get_best=False):
+    if get_best:
+        path = 'checkpoint_best.pth'
+    else:
+        path = sorted(os.listdir(log_dir))
+        path =  [w for w in path if 'checkpoint' in w]
+        print(path)
+        path = sorted(path, key=lambda s: int(re.search(r'\d+', s)))
+        path = path[-1]
+        print('PATH ', path)
+
     path = os.path.join(log_dir, 'checkpoint_best.pth')
     model_class = configs['model_class']
 
@@ -39,6 +50,8 @@ def load_model_state(configs, log_dir, device):
         print()
         print('Innit the model from ', model_path_load)
         print()
+
+
 
     human_seg_model = create_seg_model(model_class, model_path_load, innit, device)
     model = CoreSegModel(human_seg_model)

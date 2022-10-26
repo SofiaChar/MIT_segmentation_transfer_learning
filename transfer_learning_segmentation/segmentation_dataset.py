@@ -1,4 +1,5 @@
 import os
+import random
 import re
 from pathlib import Path
 import json
@@ -40,41 +41,40 @@ class SegmentationDataSet(data.Dataset):
                     index: int):
         # Select the sample
         black_mark = False
-        input_ID = self.inputs[index]
-        target_ID = self.targets[index]
+        try:
+            input_ID = self.inputs[index]
+            target_ID = self.targets[index]
+        except:
+            index = random.randint(0, len(self.targets)-1)
+            input_ID = self.inputs[index]
+            target_ID = self.targets[index]
         # Load input and target
-        x = imread(input_ID)
+
+        x = cv2.imread(input_ID)
+        x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
         try:
             y = imread(target_ID)
         except:
             y = cv2.imread(target_ID)
             y = cv2.cvtColor(y, cv2.COLOR_BGR2RGB)
 
-        # print('target_ID', target_ID)
         if 'detectron' in target_ID:
             y = (y==2).astype(float)
             if np.mean(y) < 0.1:
                 y = np.ones((3,512,512))*255
-                black_mark = True
+                del self.inputs[index]
+                del self.targets[index]
+                return self.__getitem__(index)
 
-            # return z,z
-        # if 'masks' in input_ID:
+            # else:
+            #     plt.imshow(x)
+            #     plt.show()
+            #     plt.imshow(y)
+            #     plt.show()
 
-        # if 'supervisely' in target_ID:
-        #     y = self.imread_supervisely_json(target_ID)
-        # elif 'similars' in target_ID:
-        #     y = self.imread_similars_json(target_ID, x.shape)
-        # else:
-        #     y = imread(target_ID)
-        #     if 'fashion' in target_ID:
-        #         print('FASHION')
-        #         y = np.clip(y, 0, 1) * 255
-        #         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (20, 20))
-        #         y = cv2.morphologyEx(y, cv2.MORPH_OPEN, kernel)
-        #         print(y.max(), y.min())
 
         x = torch.Tensor(cv2.resize(x, (512, 512))).float() / 255
-        y = torch.Tensor(cv2.resize(y, (512, 512))).float() / 255
+        y = torch.Tensor(cv2.resize(y, (512, 512))).float() / y.max()
         #
         if len(y.shape) == 3:
             y = y.permute((2, 0, 1))
@@ -98,7 +98,7 @@ class SegmentationDataSet(data.Dataset):
         y = y.unsqueeze(0)
 
         x, y = x.cuda().to(self.device), y.cuda().to(self.device)
-
+        # print('seg data y min max', y.max(), y.min())
         return x, y
 
     @staticmethod

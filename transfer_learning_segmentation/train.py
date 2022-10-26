@@ -1,15 +1,17 @@
 from __future__ import print_function, division
 
-import shutil
-
-# from torchinfo import summary
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.backends.cudnn as cudnn
 import matplotlib.pyplot as plt
 import os
 
+from torchinfo import summary
+
 from transfer_learning_segmentation.builds.build_1 import build_1_config
+from transfer_learning_segmentation.builds.build_2 import build_2_config
+from transfer_learning_segmentation.builds.build_3 import build_3_config
+from transfer_learning_segmentation.builds.build_4 import build_4_config
 from transfer_learning_segmentation.logger import load_model_state
 from transfer_learning_segmentation.segmentation_dataset import construct_dataset, get_dataloaders
 from transfer_learning_segmentation.trainer import train_model
@@ -34,15 +36,14 @@ def main(configs):
 
     print('torch.cuda.current_device()',torch.cuda.current_device())
 
-    # summary(model_conv, (configs["batch_size"], 3, 512, 512))
+    summary(model_conv, (configs["batch_size"], 3, 512, 512))
 
     writer = SummaryWriter(log_dir=log_dir)
-    # if not os.path.exists(os.path.join(log_dir, 'variant.yml')):
-    #     shutil.copyfile("/mnt_sda/ML/Sofia/segmenter/seg_small_mask/variant.yml", os.path.join(log_dir,'variant.yml'))
 
     model_conv = train_model(model_conv, configs, optimizer,
                              lr_schedule, dataloaders, dataset_sizes, writer=writer, start_epoch=start_epoch, best_acc=best_acc, device=DEVICE)
 
 
 if __name__ == "__main__":
-    main(configs=build_1_config)
+
+    main(configs=build_4_config)
