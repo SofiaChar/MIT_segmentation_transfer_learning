@@ -20,7 +20,8 @@ class CoreHumanSegModel(nn.Module):
 
 def create_seg_model(hum_seg_model_class, path, innit, device):
     human_seg = hum_seg_model_class()
-    backbone_state_dict = None
+    # human_seg.load_state_dict()
+    # backbone_state_dict = None
     # if not innit:
     #     # backbone_state_dict, human_state_dict = reorder_weights(path)
     #     human_seg.load_state_dict(human_state_dict, strict=True)

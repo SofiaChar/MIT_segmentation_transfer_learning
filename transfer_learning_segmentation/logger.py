@@ -26,6 +26,7 @@ def save_checkpoint(model, optimizer, lr_scheduler, epoch, path, iou_res, bce_re
 
 def load_model_state(configs, log_dir, device, get_best=False):
     model_class = configs['model_class']
+    use_features = configs['use_features']
 
     if get_best:
         path = 'checkpoint_best.pth'
@@ -51,8 +52,8 @@ def load_model_state(configs, log_dir, device, get_best=False):
         print('Innit the model from ', model_path_load)
         print()
 
-    human_seg_model = create_seg_model(model_class, model_path_load, innit, device)
-    model = CoreSegModel(human_seg_model)
+    # human_seg_model = create_seg_model(model_class, model_path_load, innit, device)
+    model = CoreSegModel(model_class, use_features)
     model.to(device)
 
     optimizer = optim.SGD(model.parameters(), lr=configs["learning_rate"], momentum=0.9)
@@ -60,6 +61,7 @@ def load_model_state(configs, log_dir, device, get_best=False):
 
     if not innit:
         loaded = torch.load(path)
+        model.load_state_dict(torch.load(model_path_load))
 
         optimizer.load_state_dict(loaded['optimizer'])
         lr_schedule.load_state_dict(loaded['lr_scheduler'])

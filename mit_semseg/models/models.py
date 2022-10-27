@@ -20,12 +20,13 @@ class SegmentationModuleBase(nn.Module):
 
 
 class SegmentationModule(SegmentationModuleBase):
-    def __init__(self, net_enc, net_dec, crit, deep_sup_scale=None):
+    def __init__(self, net_enc, net_dec, crit, deep_sup_scale=None, features=False):
         super(SegmentationModule, self).__init__()
         self.encoder = net_enc
         self.decoder = net_dec
         self.crit = crit
         self.deep_sup_scale = deep_sup_scale
+        self.features = features
 
     def forward(self, feed_dict):
         # training
@@ -44,7 +45,8 @@ class SegmentationModule(SegmentationModuleBase):
         #     return loss, acc
         # # inference
         # else:
-        pred = self.decoder(self.encoder(feed_dict, return_feature_maps=False), segSize=(512, 512))
+        pred = self.decoder(self.encoder(feed_dict, return_feature_maps=self.features), segSize=(512, 512),
+                            features=self.features)
         return pred
 
 
@@ -264,7 +266,7 @@ class ResnetDilated(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x);
-        conv_out.append(x);
+        # conv_out.append(x);
         x = self.layer2(x);
         conv_out.append(x);
         x = self.layer3(x);
@@ -273,6 +275,7 @@ class ResnetDilated(nn.Module):
         conv_out.append(x);
 
         if return_feature_maps:
+            # del conv_out[0]
             return conv_out
         return [x]
 
@@ -471,7 +474,7 @@ class PPMDeepsup(nn.Module):
         self.conv_last_deepsup = nn.Conv2d(fc_dim // 4, num_class, 1, 1, 0)
         self.dropout_deepsup = nn.Dropout2d(0.1)
 
-    def forward(self, conv_out, segSize=None):
+    def forward(self, conv_out, segSize=None, features=False):
         conv5 = conv_out[-1]
 
         input_size = conv5.size()
@@ -489,6 +492,8 @@ class PPMDeepsup(nn.Module):
             x = nn.functional.interpolate(
                 x, size=segSize, mode='bilinear', align_corners=False)
             x = nn.functional.softmax(x, dim=1)
+            if features:
+                return x, conv_out
             return x
 
         # deep sup
@@ -500,6 +505,8 @@ class PPMDeepsup(nn.Module):
         x = nn.functional.log_softmax(x, dim=1)
         _ = nn.functional.log_softmax(_, dim=1)
 
+        if features:
+            return (x, _), conv_out
         return (x, _)
 
 

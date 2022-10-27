@@ -16,7 +16,8 @@ from torchmetrics.functional import jaccard_index
 from transfer_learning_segmentation.logger import summary_images, save_checkpoint
 
 
-def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes, writer, start_epoch, best_acc=0.0, device = "cuda:0"):
+def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes, writer, start_epoch, best_acc=0.0,
+                device="cuda:0"):
     num_epochs = configs['epochs']
     criterion = configs['criterion']
     jaccard = JaccardIndex(num_classes=2)
@@ -82,7 +83,8 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
                 # statistics
                 running_loss += loss.item()
                 iou = jaccard_index(torch.tensor(np.expand_dims(preds.cpu().numpy(), axis=0)),
-                                    torch.tensor(np.uint8(np.expand_dims(labels.cpu().numpy(), axis=0))), num_classes=2, threshold=0.4)
+                                    torch.tensor(np.uint8(np.expand_dims(labels.cpu().numpy(), axis=0))), num_classes=2,
+                                    threshold=0.4)
 
                 iou_res += iou
                 print('Curr iou ', iou, iou_res)
@@ -114,7 +116,6 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
             if phase == 'val':
                 print(f'{phase} BEST IOU: {best_acc:.4f}')
 
-
             # save best model
             if phase == 'val':
                 summary_images(inputs_to_show, labels_to_show, preds_to_show, epoch, writer, backbone_to_show)
@@ -123,9 +124,8 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
                     print('SAVE CHECKPOINT BEST, curr_best_acc, new_best_acc', best_acc, epoch_acc)
                     best_acc = epoch_acc
                     # best_model = copy.deepcopy(model)
-                save_checkpoint(model, optimizer, scheduler, epoch,
-                                str(writer.get_logdir()) + f'/checkpoint_best.pth', best_acc, epoch_loss)
-
+                    save_checkpoint(model, optimizer, scheduler, epoch,
+                                    str(writer.get_logdir()) + f'/checkpoint_best.pth', epoch_acc, epoch_loss)
 
         print()
         if epoch % 2 == 0:
@@ -134,4 +134,3 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
             print('Saved model checkpoint at ', str(writer.get_logdir()) + f'/checkpoint_{epoch}.pth')
 
     return model
-

@@ -1,17 +1,15 @@
 from __future__ import print_function, division
-from collections import OrderedDict
 import torch
 import torch.nn as nn
-# from torchinfo import summary
-
 from mit_semseg.models import ModelBuilder, SegmentationModule
 
 
 class CoreSegModel(nn.Module):
-    def __init__(self, human_seg):
+    def __init__(self, human_seg, features=False):
         super(CoreSegModel, self).__init__()
+        self.features = features
         self.features_extractor = self.build_backbone()
-        self.seg_model = human_seg
+        self.seg_model = human_seg()
         # summary(self.features_extractor, (1, 3, 512, 512))
 
     def forward(self, inputs):
@@ -32,8 +30,9 @@ class CoreSegModel(nn.Module):
             use_softmax=True)
 
         crit = torch.nn.NLLLoss(ignore_index=-1)
-        segmentation_module = SegmentationModule(net_encoder, net_decoder, crit)
+
+        segmentation_module = SegmentationModule(net_encoder, net_decoder, crit, features=self.features)
         for name, param in segmentation_module.named_parameters():
             param.requires_grad = False
-        # segmentation_module.eval()
+        segmentation_module.eval()
         return segmentation_module

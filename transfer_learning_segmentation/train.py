@@ -1,17 +1,12 @@
 from __future__ import print_function, division
-
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.backends.cudnn as cudnn
 import matplotlib.pyplot as plt
 import os
-
 from torchinfo import summary
-
-from transfer_learning_segmentation.builds.build_1 import build_1_config
-from transfer_learning_segmentation.builds.build_2 import build_2_config
-from transfer_learning_segmentation.builds.build_3 import build_3_config
 from transfer_learning_segmentation.builds.build_4 import build_4_config
+from transfer_learning_segmentation.builds.build_5 import build_5_config
 from transfer_learning_segmentation.logger import load_model_state
 from transfer_learning_segmentation.segmentation_dataset import construct_dataset, get_dataloaders
 from transfer_learning_segmentation.trainer import train_model
@@ -32,9 +27,9 @@ def main(configs):
     print('dataset_sizes ', dataset_sizes)
 
     # model_conv = model(configs['backbone_model_path'], device=DEVICE)
-    model_conv, optimizer, lr_schedule, start_epoch, best_acc = load_model_state(configs, log_dir, DEVICE)
+    model_conv, optimizer, lr_schedule, start_epoch, best_acc = load_model_state(configs, log_dir, DEVICE, True)
 
-    print('torch.cuda.current_device()',torch.cuda.current_device())
+    print('torch.cuda.current_device()', torch.cuda.current_device())
 
     summary(model_conv, (configs["batch_size"], 3, 512, 512))
 
@@ -46,4 +41,4 @@ def main(configs):
 
 if __name__ == "__main__":
 
-    main(configs=build_4_config)
+    main(configs=build_5_config)
