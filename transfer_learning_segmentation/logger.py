@@ -25,20 +25,20 @@ def save_checkpoint(model, optimizer, lr_scheduler, epoch, path, iou_res, bce_re
 
 
 def load_model_state(configs, log_dir, device, get_best=False):
+    model_class = configs['model_class']
+
     if get_best:
         path = 'checkpoint_best.pth'
     else:
         path = sorted(os.listdir(log_dir))
-        path =  [w for w in path if 'checkpoint' in w]
-        print(path)
-        path = sorted(path, key=lambda s: int(re.search(r'\d+', s)))
-        path = path[-1]
-        print('PATH ', path)
+        path = [w for w in path if 'checkpoint' in w and 'best' not in w]
+        ind = sorted([int(re.findall(r'\d+', p)[0]) for p in path])[-1]
+        path = f'checkpoint_{ind}.pth'
 
-    path = os.path.join(log_dir, 'checkpoint_best.pth')
-    model_class = configs['model_class']
+    path = os.path.join(log_dir, path)
+    print('PATH ', path)
 
-    if os.path.exists(os.path.join(log_dir, 'checkpoint_best.pth')):
+    if os.path.exists(path):
         innit = False
         model_path_load = path[:-4] + '_model.pth'
 
@@ -50,8 +50,6 @@ def load_model_state(configs, log_dir, device, get_best=False):
         print()
         print('Innit the model from ', model_path_load)
         print()
-
-
 
     human_seg_model = create_seg_model(model_class, model_path_load, innit, device)
     model = CoreSegModel(human_seg_model)
@@ -65,7 +63,7 @@ def load_model_state(configs, log_dir, device, get_best=False):
 
         optimizer.load_state_dict(loaded['optimizer'])
         lr_schedule.load_state_dict(loaded['lr_scheduler'])
-        start_epoch = loaded["epoch"]
+        start_epoch = loaded["epoch"] + 1
         if "iou_res" in loaded.keys():
             iou_res = loaded["iou_res"]
             bce_res = loaded["bce_res"]

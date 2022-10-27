@@ -34,7 +34,6 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
             if phase == 'train':
                 num_steps = configs['steps_per_epoch']
                 # num_steps = 10
-
             else:
                 num_steps = dataset_sizes['val']
 
@@ -50,15 +49,6 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
 
                 try:
                     inputs, labels = next(generators[phase])
-
-                    # if phase == 'train':
-                    #     while True:
-                    #         inputs, labels = next(generators[phase])
-                    #         print('labels.mean()', labels.mean())
-                    #         if labels.mean() != 1.:
-                    #             break
-                    # if phase == 'val':
-                    #     inputs, labels = next(generators[phase])
                 except StopIteration:
                     generators[phase] = iter(dataloaders[phase])
                     inputs, labels = next(generators[phase])
@@ -121,7 +111,8 @@ def train_model(model, configs, optimizer, scheduler, dataloaders, dataset_sizes
 
             print(f'{phase} Loss: {epoch_loss:.4f}')
             print(f'{phase} IOU: {epoch_acc:.4f}')
-            print(f'{phase} BEST IOU: {best_acc:.4f}')
+            if phase == 'val':
+                print(f'{phase} BEST IOU: {best_acc:.4f}')
 
 
             # save best model
