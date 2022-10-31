@@ -11,3 +11,9 @@ ADE_val*.jpg
 ADE_val*.png
 
 .idea/
+**/*.jpg
+**/*.png
+**/*.h5
+**/*.mlmodel
+**/*.pb
+**/*.jpeg

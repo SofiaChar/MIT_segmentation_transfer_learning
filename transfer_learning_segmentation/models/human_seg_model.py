@@ -5,10 +5,10 @@ import torch.nn.functional as F
 
 
 class HumanSegModel(nn.Module):
-    def __init__(self, backbone_path,device, *kwargs):
+    def __init__(self, backbone_path, device, *kwargs):
         super(HumanSegModel, self).__init__()
 
-        self.features_extractor = self.set_backbone(backbone_path,device)
+        self.features_extractor = self.set_backbone(backbone_path, device)
 
         self.bnorm1 = BNormBlock(4, 16, (3, 3), strides=2)
         self.dw_block1 = DWConv(16, 16, 1)
@@ -122,8 +122,8 @@ class HumanSegModel(nn.Module):
         return x, x_back
 
     @staticmethod
-    def set_backbone(path,device):
-        model_conv, _ = load_model(path,device)
+    def set_backbone(path, device):
+        model_conv, _ = load_model(path, device)
 
         for name, param in model_conv.named_parameters():
             if 'conv' in name and 'encoder' in name:
@@ -137,13 +137,15 @@ class HumanSegModel(nn.Module):
 class BNormBlock(nn.Module):
     def __init__(self, in_features, out_features, kernel_size, strides=1, padding='valid', dilate=1):
         super().__init__()
+        if strides > 1:
+            self.add_pad = True
+            padding = (1,1)
         self.conv = nn.Conv2d(in_channels=in_features, out_channels=out_features, kernel_size=kernel_size,
                               padding=padding, stride=strides, dilation=dilate)
         self.b_norm = nn.BatchNorm2d(out_features)
         self.relu = nn.ReLU()
         self.add_pad = False
-        if strides > 1:
-            self.add_pad = True
+
 
     def forward(self, inputs):
         x = self.conv(inputs)
@@ -155,9 +157,9 @@ class BNormBlock(nn.Module):
 
 
 class DWConv(nn.Module):
-    def __init__(self, inp, oup, stride, dilate=(1,1)):
+    def __init__(self, inp, oup, stride, dilate=(1, 1)):
         super(DWConv, self).__init__()
-        if dilate != (1,1):
+        if dilate != (1, 1):
             self.dw_conv = nn.Conv2d(inp, inp, 3, stride, groups=inp, bias=False, dilation=dilate, padding='same')
         else:
             self.dw_conv = nn.Conv2d(inp, inp, 3, stride, 1, groups=inp, bias=False)

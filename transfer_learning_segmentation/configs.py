@@ -19,7 +19,7 @@ configs = {
         # 'human_290': '/mnt_sda/ML/datasets/semantic_segmentation/human_segmetation/human_290',
         'images': '/mnt_sda/ML/datasets/semantic_segmentation/sky_segmentation/sky/data',
 
-        'masks':'/mnt_sda/ML/datasets/semantic_segmentation/sky_segmentation/sky/groundtruth',
+        'masks': '/mnt_sda/ML/datasets/semantic_segmentation/sky_segmentation/sky/groundtruth',
 
     },
 
